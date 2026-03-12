@@ -57,16 +57,24 @@ func SetPublicKey(keyData []byte) error {
 	if len(keyData) != ed25519.PublicKeySize {
 		return fmt.Errorf("invalid public key size: expected %d, got %d", ed25519.PublicKeySize, len(keyData))
 	}
+	keyCopy := make([]byte, ed25519.PublicKeySize)
+	copy(keyCopy, keyData)
+
 	globalLock.Lock()
 	defer globalLock.Unlock()
-	publicKey = ed25519.PublicKey(keyData)
+	publicKey = ed25519.PublicKey(keyCopy)
 	return nil
 }
 
 func GetPublicKey() []byte {
 	globalLock.Lock()
 	defer globalLock.Unlock()
-	return publicKey
+	if len(publicKey) == 0 {
+		return nil
+	}
+	pubCopy := make([]byte, len(publicKey))
+	copy(pubCopy, publicKey)
+	return pubCopy
 }
 
 func GetPublicKeyBase64() string {
@@ -81,9 +89,12 @@ func SetPrivateKey(keyData []byte) error {
 	if len(keyData) != ed25519.PrivateKeySize {
 		return fmt.Errorf("invalid private key size: expected %d, got %d", ed25519.PrivateKeySize, len(keyData))
 	}
+	keyCopy := make([]byte, ed25519.PrivateKeySize)
+	copy(keyCopy, keyData)
+
 	globalLock.Lock()
 	defer globalLock.Unlock()
-	privateKey = ed25519.PrivateKey(keyData)
+	privateKey = ed25519.PrivateKey(keyCopy)
 	return nil
 }
 
